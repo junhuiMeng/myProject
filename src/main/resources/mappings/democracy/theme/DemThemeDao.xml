@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nodesoft.democracy.theme.dao.DemThemeDao">
+    
+	<sql id="demThemeColumns">
+		a.id AS "id",
+		a.year AS "year",
+		a.theme AS "theme",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.attention AS "attention",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.hold1 AS "hold1",
+		a.hold2 AS "hold2",
+		a.hold3 AS "hold3",
+		a.hold4 AS "hold4",
+		a.hold5 AS "hold5",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="demThemeJoins">
+	</sql>
+    
+	<select id="get" resultType="DemTheme">
+		SELECT 
+			<include refid="demThemeColumns"/>
+		FROM dem_theme a
+		<include refid="demThemeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DemTheme">
+		SELECT 
+			<include refid="demThemeColumns"/>
+		FROM dem_theme a
+		<include refid="demThemeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="attention != null and attention != ''">
+				AND a.attention LIKE 
+					<if test="dbName == 'oracle'">'%'||#{attention}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{attention}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{attention},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="hold1 != null and hold1 != '' and hold1 == 'fbnf'">
+				AND a.year=(select MAX(year) from dem_theme where del_flag=0)
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DemTheme">
+		SELECT 
+			<include refid="demThemeColumns"/>
+		FROM dem_theme a
+		<include refid="demThemeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO dem_theme(
+			id,
+			year,
+			theme,
+			start_date,
+			end_date,
+			attention,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			hold1,
+			hold2,
+			hold3,
+			hold4,
+			hold5,
+			status
+		) VALUES (
+			#{id},
+			#{year},
+			#{theme},
+			#{startDate},
+			#{endDate},
+			#{attention},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{hold1},
+			#{hold2},
+			#{hold3},
+			#{hold4},
+			#{hold5},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE dem_theme SET 	
+			year = #{year},
+			theme = #{theme},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			attention = #{attention},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			hold1 = #{hold1},
+			hold2 = #{hold2},
+			hold3 = #{hold3},
+			hold4 = #{hold4},
+			hold5 = #{hold5},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE dem_theme SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

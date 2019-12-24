@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nodesoft.democracy.analyse.dao.AnalyseDao">
+	<sql id="demScoreColumns">
+		a.id AS "id",
+		a.personid AS "personid",
+		a.officeid AS "officeid",
+		a.officename AS "officename",
+		a.review_type AS "reviewType",
+		a.year AS "year",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.result AS "result",
+		a.status AS "status",
+		a.hold1 AS "hold1",
+		a.hold2 AS "hold2",
+		a.hold3 AS "hold3",
+		a.hold4 AS "hold4",
+		a.hold5 AS "hold5"
+	</sql>
+	
+	<sql id="demScoreJoins">
+	</sql>
+    
+	<select id="get" resultType="DemScore">
+		SELECT 
+			<include refid="demScoreColumns"/>
+		FROM dem_score a
+		<include refid="demScoreJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findAnalyse" resultType="DemScore">
+		select 
+		year AS "year",
+		b.name AS "officeid",
+		<!-- officeid AS "officeid", -->
+		officename AS "officename",
+		review_type AS "reviewType",
+		SUM(result)/(select COUNT(id) from dem_user 
+	
+		where del_flag=0 and status='1'
+		<if test="year != null and year != ''">
+			AND year=#{year}
+		</if>
+		) AS "result"  from dem_score a
+		LEFT JOIN sys_office b on b.del_flag=0 and a.officeid=b.id
+		
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<!-- <if test="personid != null and personid != ''">
+				AND a.personid=#{personid}
+			</if> -->
+			<if test="year != null and year != ''">
+				AND a.year=#{year} 
+			</if>
+		</where>
+		GROUP BY a.year,a.officeid,a.officename,a.review_type
+		<choose>
+			<!-- <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise> -->
+			
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DemScore">
+		SELECT 
+			<include refid="demScoreColumns"/>
+		FROM dem_score a
+		<include refid="demScoreJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO dem_score(
+			id,
+			personid,
+			officeid,
+			officename,
+			review_type,
+			year,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			result,
+			status,
+			hold1,
+			hold2,
+			hold3,
+			hold4,
+			hold5
+		) VALUES (
+			#{id},
+			#{personid},
+			#{officeid},
+			#{officename},
+			#{reviewType},
+			#{year},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{result},
+			#{status},
+			#{hold1},
+			#{hold2},
+			#{hold3},
+			#{hold4},
+			#{hold5}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE dem_score SET 	
+			personid = #{personid},
+			officeid = #{officeid},
+			officename = #{officename},
+			review_type = #{reviewType},
+			year = #{year},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			result = #{result},
+			status = #{status},
+			hold1 = #{hold1},
+			hold2 = #{hold2},
+			hold3 = #{hold3},
+			hold4 = #{hold4},
+			hold5 = #{hold5}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete"> 
+		UPDATE dem_score SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<select id="findAreaList" resultType="Area">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids,
+			a.code,
+			a.name,
+			a.sort,
+			a.type,
+			a.remarks,
+			a.create_by AS "createBy.id",
+			a.create_date,
+			a.update_by AS "updateBy.id",
+			a.update_date,
+			a.del_flag
+		FROM sys_area a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		 and  parent_id in('2','3')
+		 ORDER BY a.code 
+		 
+	</select>
+	
+	<select id="findUnitList" resultType="Office">
+		SELECT
+		a.id,
+		a.name,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address, 
+		a.zip_code, 
+		a.master, 
+		a.phone, 
+		a.fax, 
+		<!-- a.email,  -->
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.useable AS useable,
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id"
+		FROM sys_office a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		 <!-- and  parent_id in('2','3') -->
+		 and type !='无'
+		 and ISNULL(type)=0 and LENGTH(trim(type)) &gt; 0
+		 <if test="area != null and area.id!=null and area.id != ''">
+			AND a.area_id = #{area.id}
+		</if>
+		<if test="type != null and type != ''">
+			AND a.type = #{type}
+		</if>
+		ORDER BY a.CODE
+	</select>
+
+
+	<select id="getquestiontype" resultType="java.lang.String">
+		SELECT
+		a.type
+		FROM sys_office a
+		WHERE a.del_flag = '0'
+		AND a.area_id = #{id}
+		and ISNULL(type)=0 and LENGTH(trim(type))>0
+		AND a.type&lt;&gt;'无'
+		GROUP BY a.type
+	</select>
+
+	<select id="UnitLbList" resultType="Office">
+		SELECT DISTINCT type AS "email"
+		FROM sys_office a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and type !='无'
+		 AND ISNULL(type) = 0
+		AND LENGTH(trim(type)) &gt; 0
+		<if test="area != null and area.id!=null and area.id != ''">
+			AND a.area_id = #{area.id}
+		</if>
+		ORDER BY a.type
+	</select>
+	
+	<!-- <select id="getcount" resultType="Office" parameterType="O"> -->
+	<select id="getcount" resultType="Office">
+		SELECT count(DISTINCT type) AS "email"
+		FROM sys_office a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and type !='无'
+		 AND ISNULL(type) = 0
+		AND LENGTH(trim(type)) &gt; 0
+		<if test="area != null and area.id!=null and area.id != ''">
+			AND a.area_id = #{area.id}
+		</if>
+	</select>
+	
+</mapper>

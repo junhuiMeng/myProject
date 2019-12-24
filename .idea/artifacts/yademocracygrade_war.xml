@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="yademocracygrade:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>yademocracygrade</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="yademocracygrade.war">
+      <element id="artifact" artifact-name="yademocracygrade:war exploded" />
+    </root>
+  </artifact>
+</component>

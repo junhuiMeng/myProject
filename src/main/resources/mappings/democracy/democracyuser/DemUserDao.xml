@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nodesoft.democracy.democracyuser.dao.DemUserDao">
+    
+	<sql id="demUserColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.tel AS "tel",
+		a.year AS "year",
+		a.status AS "status",
+		a.officeid AS "officeid",
+		a.officename AS "officename",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.opinion AS "opinion",
+		a.hold1 AS "hold1",
+		a.hold2 AS "hold2",
+		a.hold3 AS "hold3",
+		a.hold4 AS "hold4",
+		a.hold5 AS "hold5"
+	</sql>
+	
+	<sql id="demUserJoins">
+	</sql>
+    
+	<select id="get" resultType="DemUser">
+		SELECT 
+			<include refid="demUserColumns"/>
+		FROM dem_user a
+		<include refid="demUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DemUser">
+		SELECT 
+			<include refid="demUserColumns"/>
+		FROM dem_user a
+		<include refid="demUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="tel != null and tel != ''">
+				AND a.tel=#{tel}
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year=#{year}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DemUser">
+		SELECT 
+			<include refid="demUserColumns"/>
+		FROM dem_user a
+		<include refid="demUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO dem_user(
+			id,
+			name,
+			tel,
+			year,
+			status,
+			officeid,
+			officename,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			opinion,
+			hold1,
+			hold2,
+			hold3,
+			hold4,
+			hold5
+		) VALUES (
+			#{id},
+			#{name},
+			#{tel},
+			#{year},
+			#{status},
+			#{officeid},
+			#{officename},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{opinion},
+			#{hold1},
+			#{hold2},
+			#{hold3},
+			#{hold4},
+			#{hold5}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE dem_user SET 	
+			name = #{name},
+			tel = #{tel},
+			year = #{year},
+			status = #{status},
+			officeid = #{officeid},
+			officename = #{officename},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			opinion = #{opinion},
+			hold1 = #{hold1},
+			hold2 = #{hold2},
+			hold3 = #{hold3},
+			hold4 = #{hold4},
+			hold5 = #{hold5}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE dem_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
